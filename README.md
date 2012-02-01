@@ -8,7 +8,7 @@ To run...
 ```bash
 cd app
 
-node bin/server
+node bin/server.js
 
 ```
 
