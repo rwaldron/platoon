@@ -15,3 +15,5 @@ node bin/server
 
 
 Built With: grunt, jitsu, socket.io and love
+
+All code _must_ confirm to https://github.com/rwldrn/idiomatic.js
