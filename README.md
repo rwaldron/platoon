@@ -4,8 +4,8 @@ Node.js powered, WebRTC Delivered video chat
 
 
 To run...
-```
 
+```bash
 cd app
 
 node bin/server
