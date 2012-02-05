@@ -22,7 +22,9 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "grunt": "~0.1.0"
+    "grunt": "~0.1.0",
+    "express": "*",
+    "socket.io": "*"
   },
   "keywords": [],
   "engines": {
