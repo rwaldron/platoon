@@ -1,0 +1,3 @@
+$(function() {
+  Platoon.join();
+});
