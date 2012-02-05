@@ -9,13 +9,15 @@ config.init({
       ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */'
   },
   concat: {
-    'dist/platoon.js': ['<banner>', '<file_strip_banner:lib/platoon.js>']
+    'dist/platoon.js': ['<banner>', '<file_strip_banner:lib/platoon.js>'],
+    'public/javascripts/platoon.js': ['<banner>', '<file_strip_banner:lib/platoon.js>']
   },
   min: {
-    'dist/platoon.min.js': ['<banner>', 'dist/platoon.js']
+    'dist/platoon.min.js': ['<banner>', 'dist/platoon.js'],
+    'public/javascripts/platoon.min.js': ['<banner>', 'public/javascripts/platoon.js']
   },
   test: {
-    files: ['test/**/*.js']
+    files: ['test/**/*.html']
   },
   lint: {
     files: ['grunt.js', 'lib/**/*.js', 'test/**/*.js']
@@ -35,11 +37,14 @@ config.init({
       sub: true,
       undef: true,
       boss: true,
-      eqnull: true
+      eqnull: true,
+      browser: true
     },
     globals: {
+      jQuery: true,
       exports: true,
-      module: true
+      module: true,
+      console: true
     }
   },
   uglify: {}

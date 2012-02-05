@@ -24,7 +24,8 @@
   "devDependencies": {
     "grunt": "~0.1.0",
     "express": "*",
-    "socket.io": "*"
+    "socket.io": "*",
+    "jade": ">= 0.0.1"
   },
   "keywords": [],
   "engines": {
