@@ -1,4 +1,4 @@
-/*! platoon - v0.1.0 - 2/5/2012
+/*! platoon - v0.1.0 - 2/6/2012
 * https://github.com/rwldrn/platoon
 * Copyright (c) 2012 Rick Waldron <waldron.rick@gmail.com>; Licensed MIT */
 
@@ -7,6 +7,24 @@
 * Copyright (c) 2012 Rick Waldron <waldron.rick@gmail.com>; Licensed MIT */
 
 (function( exports ) {
+
+var requestAnimationFrame, cancelAnimationFrame,
+  vendors = [ "ms", "moz", "webkit", "o" ],
+  prefix = "";
+
+  if ( !exports.requestAnimationFrame ) {
+    while ( vendors.length ) {
+      prefix = vendors.pop();
+
+      requestAnimationFrame = exports[ prefix + "RequestAnimationFrame" ];
+      cancelAnimationFrame = exports[ prefix + "CancelAnimationFrame" ] ||
+                              exports[ prefix + "CancelRequestAnimationFrame" ];
+
+      if ( requestAnimationFrame ) {
+        break;
+      }
+    }
+  }
 
 var // Localize navigator for use within getUserMedia
   navigator = exports.navigator,
@@ -44,9 +62,14 @@ var // Localize navigator for use within getUserMedia
     this.canvas = Unit.fixture( "canvas", this.id );
     this.context = this.canvas.getContext("2d");
 
+    // Store datauri's received from stream
+    this.dataUri = "";
+
     // This unit is connected with the same
     // socket as everyone else.
     this.socket = socket;
+
+    this.isDrawing = false;
 
     if ( isMe ) {
 
@@ -57,30 +80,46 @@ var // Localize navigator for use within getUserMedia
         // When video signals that it has loadedmetadata, begin "playing"
         this.media.addEventListener( "loadedmetadata", function() {
           this.media.play();
-        }.bind(this));
+        }.bind(this), false);
+
+        this.media.addEventListener( "timeupdate", function() {
+          this.draw();
+          this.broadcast();
+        }.bind(this), false);
 
       }.bind(this);
 
       getUserMedia( withUserMedia );
     }
-
     // call throttled requestAnimationFrame to capture frames-to-stream
-    this.throttle();
+    // this.throttle();
   };
 
+
   Unit.prototype.throttle = function() {
-    requestAnimationFrame(function throttle() {
-      // Process current frames
-      this.draw();
-      // Continue the event loop
-      requestAnimationFrame( throttle.bind(this) );
-    }.bind(this));
+    // requestAnimationFrame(function throttle() {
+    //   // Process current frames
+    //   this.draw();
+    //   // Continue the event loop
+    //   requestAnimationFrame( throttle.bind(this) );
+    // }.bind(this));
+
+    // setInterval(function() {
+    //   // Process current frames
+    //   this.draw();
+    // }.bind(this), 1000/20 );
   };
 
   Unit.prototype.draw = function() {
+    this.isDrawing = true;
     // Draw current video frame to the canvas
     this.context.drawImage( this.media, 0, 0, 280, 160 );
 
+    // Reset isDrawing flag
+    this.isDrawing = false;
+  };
+
+  Unit.prototype.broadcast = function() {
     // Dispatch a "stream" event to the socket
     // This will be relayed out to all other
     // units in the platoon
@@ -91,7 +130,6 @@ var // Localize navigator for use within getUserMedia
       });
     }
   };
-
 
   // Static Unit functions
   // Unit.id()
@@ -132,6 +170,8 @@ var // Localize navigator for use within getUserMedia
 
     socket: null,
 
+    loop: null,
+
     // Entry point:
     //   creates new id,
     //   stores id,
@@ -141,7 +181,7 @@ var // Localize navigator for use within getUserMedia
     join: function( socket ) {
       var id;
 
-      // Cheto see if an Id exists in storage...
+      // Check to see if an Id exists in storage...
       id = localStorage.getItem("id");
 
       // If not, then generate id for for newly joined unit
@@ -161,27 +201,61 @@ var // Localize navigator for use within getUserMedia
       this.socket.emit( "join", {
         id: id
       });
+
+      // Initiate event loop for rendering "other" units
+      (function throttle() {
+        // Process current frames
+        // this.draw();
+        var keys = Object.keys( Platoon.cache );
+
+        if ( keys.length > 1 ) {
+
+          keys.forEach(function( key ) {
+            var unit = this[ key ];
+
+            if ( !unit.isMe && !unit.isDrawing ) {
+              unit.media.src = unit.dataUri;
+              unit.draw();
+            }
+          }, Platoon.cache );
+        }
+
+        // Continue the event loop
+        //Platoon.loop = requestAnimationFrame( throttle );
+        Platoon.loop = setTimeout( throttle, 1000/4 );
+      }());
     },
     // Assign Socket listeners, keeps socket event handlers consolidated
     listen: function() {
 
+      // Handle newly joined units
       this.socket.on( "joined", function( data ) {
-        if ( !Unit.exists(data.id) ) {
-          this.cache[ data.id ] = new Unit( data.id, this.socket, localStorage.getItem("id") === data.id );
+        var id = data.id;
+
+        if ( !Unit.exists(id) ) {
+          this.cache[ id ] = new Unit( id, this.socket, localStorage.getItem("id") === id );
         }
-      }.bind(this) );
+      }.bind(this));
 
+      // If the socket disconnects, cancel the the event loop
+      this.socket.on( "disconnect", function() {
+        cancelAnimationFrame( Platoon.loop );
+      });
 
+      // When recieving streams from the socket,
+      // store them in the unit instance
       this.socket.on( "stream", function( data ) {
-        var unit = this.cache[ data.id ];
+        var id = data.id,
+            unit = this.cache[ id ];
 
-        if ( !unit && !Unit.exists(data.id) ) {
-          // Any missed "joined" events need to have their unit initialized locally
-          unit = this.cache[ data.id ] = new Unit( data.id, this.socket, false );
+        // Any missed "joined" events need to have
+        // their unit initialized locally
+        if ( !unit && !Unit.exists(id) ) {
+          unit = this.cache[ id ] = new Unit( id, this.socket, false );
         }
 
-        if ( localStorage.getItem("id") !== data.id ) {
-          unit.media.src = data.stream;
+        if ( localStorage.getItem("id") !== id ) {
+          unit.dataUri = data.stream;
         }
       }.bind(this));
     }
@@ -190,4 +264,4 @@ var // Localize navigator for use within getUserMedia
   exports.Platoon = Platoon;
   exports.Unit = Unit;
 
-} ( typeof exports === "object" && exports || this ) );
+} (typeof exports === "object" && exports || this) );

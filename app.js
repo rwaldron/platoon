@@ -27,7 +27,7 @@ var connections = {
   // uid: object
 };
 
-
+io.set( "log level", 1 );
 // When socket is connected, initialize new unit in platoon,
 // begin relay of WebRTC captures
 io.sockets.on( "connection", function( client ) {
