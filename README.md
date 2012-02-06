@@ -2,14 +2,14 @@
 
 Node.js powered, WebRTC Delivered video chat
 
-<img src="http://gyazo.com/e7018713db072b28b9b268d398dd8bd9.png">
+<img src="http://cache.gyazo.com/e7018713db072b28b9b268d398dd8bd9.png">
 
 
 
 
 ```bash
 
-node app
+$ node app
 
 ```
 
