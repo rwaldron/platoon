@@ -17,7 +17,7 @@ config.init({
     'public/javascripts/platoon.min.js': ['<banner>', 'public/javascripts/platoon.js']
   },
   test: {
-    files: ['test/**/*.html']
+    files: ['test/**/*.js']
   },
   lint: {
     files: ['grunt.js', 'lib/**/*.js', 'test/**/*.js']
@@ -41,7 +41,11 @@ config.init({
       browser: true
     },
     globals: {
+      navigator: true,
+      requestAnimationFrame: true,
       jQuery: true,
+      io: true,
+      global: true,
       exports: true,
       module: true,
       console: true

@@ -1,3 +1,3 @@
 $(function() {
-  Platoon.join();
+  Platoon.join(io.connect());
 });
