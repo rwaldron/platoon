@@ -1,4 +1,4 @@
-/*! platoon - v0.1.0 - 2/6/2012
+/*! platoon - v0.1.0 - 2/7/2012
 * https://github.com/rwldrn/platoon
 * Copyright (c) 2012 Rick Waldron <waldron.rick@gmail.com>; Licensed MIT */
 
@@ -10,15 +10,16 @@
 
 var requestAnimationFrame, cancelAnimationFrame,
   vendors = [ "ms", "moz", "webkit", "o" ],
-  prefix = "";
+  prefix = "",
+  postfix = "AnimationFrame";
 
   if ( !exports.requestAnimationFrame ) {
     while ( vendors.length ) {
       prefix = vendors.pop();
 
-      requestAnimationFrame = exports[ prefix + "RequestAnimationFrame" ];
-      cancelAnimationFrame = exports[ prefix + "CancelAnimationFrame" ] ||
-                              exports[ prefix + "CancelRequestAnimationFrame" ];
+      requestAnimationFrame = exports[ prefix + "Request" + postfix ];
+      cancelAnimationFrame = exports[ prefix + "Cancel" + postfix ] ||
+                              exports[ prefix + "CancelRequest" + postfix ];
 
       if ( requestAnimationFrame ) {
         break;
@@ -33,8 +34,8 @@ var // Localize navigator for use within getUserMedia
   // getUserMedia implementations. Thanks to Mike Taylr's http://miketaylr.com/photobooth/
   // for helping to outline proper Opera support
   getUserMedia = function( callback ) {
-    var getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.oGetUserMedia,
-        media = navigator.oGetUserMedia ? { video: true, audio: true } : "video audio";
+    var getMedia = navigator.getUserMedia || navigator.webkitGetUserMedia,
+        media = navigator.getUserMedia ? { video: true, audio: true } : "video audio";
 
     getMedia.call( navigator, media, function( data ) {
       var stream = window.webkitURL ? window.webkitURL.createObjectURL( data ) : data;
@@ -222,7 +223,7 @@ var // Localize navigator for use within getUserMedia
 
         // Continue the event loop
         //Platoon.loop = requestAnimationFrame( throttle );
-        Platoon.loop = setTimeout( throttle, 1000/4 );
+        Platoon.loop = setTimeout( throttle, 1000/6 );
       }());
     },
     // Assign Socket listeners, keeps socket event handlers consolidated
