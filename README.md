@@ -1,4 +1,4 @@
-# platoon
+# Platoon
 
 Node.js powered, WebRTC Delivered video chat
 
@@ -7,11 +7,13 @@ Node.js powered, WebRTC Delivered video chat
 
 
 Run with:
+
 ```bash
 $ node app
 ```
 
 Verify and Build code with:
+
 ```bash
 $ grunt
 ```
